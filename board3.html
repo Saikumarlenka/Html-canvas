@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Shape Drawing App</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #toolbar {
+            display: flex;
+            margin: 20px;
+        }
+        .tool-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 0 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 16px;
+        }
+        #drawingCanvas {
+            border: 2px solid #333;
+            cursor: crosshair;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div id="toolbar">
+    <button class="tool-button" data-shape="circle">Circle</button>
+    <button class="tool-button" data-shape="square">Square</button>
+    <button class="tool-button" data-shape="triangle">Triangle</button>
+</div>
+<canvas id="drawingCanvas" width="800" height="600"></canvas>
+
+<script>
+    const canvas = document.getElementById('drawingCanvas');
+    const ctx = canvas.getContext('2d');
+    const buttons = document.querySelectorAll('.tool-button');
+
+    let drawing = false;
+    let startX = 0;
+    let startY = 0;
+    let selectedShape = null;
+
+    // Shape selection handling
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            selectedShape = button.getAttribute('data-shape');
+        });
+    });
+
+    // Mouse event listeners
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', drawShape);
+    canvas.addEventListener('mouseup', endDrawing);
+
+    function startDrawing(e) {
+        if (!selectedShape) return;
+
+        drawing = true;
+        startX = e.clientX - canvas.offsetLeft;
+        startY = e.clientY - canvas.offsetTop;
+    }
+
+    function drawShape(e) {
+        if (!drawing) return;
+
+        const endX = e.clientX - canvas.offsetLeft;
+        const endY = e.clientY - canvas.offsetTop;
+
+        // Clear canvas to redraw each shape preview
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw selected shape preview based on selectedShape
+        ctx.beginPath();
+        switch (selectedShape) {
+            case 'circle':
+                const radius = Math.hypot(endX - startX, endY - startY) / 2;
+                ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+                break;
+            case 'square':
+                const side = Math.max(Math.abs(endX - startX), Math.abs(endY - startY));
+                ctx.rect(startX, startY, side * (endX < startX ? -1 : 1), side * (endY < startY ? -1 : 1));
+                break;
+            case 'triangle':
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.lineTo(startX - (endX - startX), endY);
+                ctx.closePath();
+                break;
+        }
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    function endDrawing() {
+        drawing = false;
+        ctx.closePath();
+    }
+</script>
+
+</body>
+</html>

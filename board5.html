@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Canvas Drawing with Dynamic Preview</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Canvas Drawing with Dynamic Preview</h1>
+    <canvas id="drawingCanvas" width="800" height="600"></canvas>
+    <br>
+    <button onclick="setMode('pencil')">Pencil</button>
+    <button onclick="setMode('rectangle')">Rectangle</button>
+    <button onclick="setMode('circle')">Circle</button>
+    <button onclick="clearCanvas()">Clear Canvas</button>
+
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+        let mode = 'pencil';
+        let startX, startY;
+        let shapes = [];
+
+        canvas.addEventListener('mousedown', (e) => {
+            drawing = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+            if (mode === 'pencil') {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                shapes.push({ type: 'pencil', points: [{ x: startX, y: startY }] });
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (drawing) {
+                const currentX = e.offsetX;
+                const currentY = e.offsetY;
+
+                // Clear the canvas before drawing the preview
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Redraw existing shapes
+                shapes.forEach(shape => {
+                    ctx.beginPath();
+                    if (shape.type === 'rectangle') {
+                        ctx.rect(shape.startX, shape.startY, shape.width, shape.height);
+                    } else if (shape.type === 'circle') {
+                        ctx.arc(shape.startX, shape.startY, shape.radius, 0, Math.PI * 2);
+                    } else if (shape.type === 'pencil') {
+                        shape.points.forEach((point, index) => {
+                            if (index === 0) {
+                                ctx.moveTo(point.x, point.y);
+                            } else {
+                                ctx.lineTo(point.x, point.y);
+                            }
+                        });
+                    }
+                    ctx.stroke();
+                });
+
+                // Draw the current preview shape
+                if (mode === 'pencil') {
+                    ctx.lineTo(currentX, currentY);
+                    ctx.stroke();
+                    shapes[shapes.length - 1].points.push({ x: currentX, y: currentY });
+                } else if (mode === 'rectangle') {
+                    ctx.beginPath();
+                    ctx.rect(startX, startY, currentX - startX, currentY - startY);
+                    ctx.stroke();
+                } else if (mode === 'circle') {
+                    const radius = Math.sqrt(Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2));
+                    ctx.beginPath();
+                    ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (drawing) {
+                drawing = false;
+                const endX = e.offsetX;
+                const endY = e.offsetY;
+
+                if (mode === 'pencil') {
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+                } else if (mode === 'rectangle') {
+                    const width = endX - startX;
+                    const height = endY - startY;
+                    ctx.beginPath();
+                    ctx.rect(startX, startY, width, height);
+                    ctx.stroke();
+                    shapes.push({ type: 'rectangle', startX, startY, width, height });
+                } else if (mode === 'circle') {
+                    const radius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+                    ctx.beginPath();
+                    ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    shapes.push({ type: 'circle', startX, startY, radius });
+                }
+            }
+        });
+
+        function setMode(newMode) {
+            mode = newMode;
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            shapes = [];
+        }
+    </script>
+</body>
+</html>
