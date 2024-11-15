@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw</title>
+    <style>
+        #canvas{
+            border: 1px solid black;
+        }
+        button{
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="makeRect()">Rectangle</button>
+    <canvas id="canvas" width="900" height="900"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        canvas.width=window.innerWidth;
+        canvas.height= window.innerHeight;
+        const ctx = canvas.getContext('2d');
+        let drawing= false
+        let startX=0;
+        let startY=0;
+
+
+        canvas.addEventListener('mousedown' , (e) => {
+            drawing = true
+            startX= e.clientX-canvas.offsetLeft;
+            startY= e.clientY-canvas.offsetTop;
+            // ctx.moveTo(e.clientX-canvas.offsetLeft,e.clientY-canvas.offsetTop);
+        });
+        canvas.addEventListener('mousemove' ,(e)=>{
+            // if(!drawing) return;
+            // ctx.lineTo(e.clientX-canvas.offsetLeft,e.clientY-canvas.offsetTop);
+            // ctx.stroke();
+            if(!drawing) return;
+            ctx.beginPath();
+           
+           let endX= e.clientX-canvas.offsetLeft;
+           let endY= e.clientY-canvas.offsetTop;
+           let side=Math.max(Math.abs(endX-startX),Math.abs(endY-startY));
+           ctx.rect(startX,startY,side*(endX<startX?-1:1),side*(endY<startY?-1:1));
+           ctx.stroke();
+        })
+        canvas.addEventListener('mouseup',(e)=>{
+            
+            ctx.closePath();
+            drawing = false;
+        })
+        canvas.addEventListener('mouseout',(e)=>{
+            ctx.closePath();
+            drawing = false;
+        })
+        
+
+        function makeRect(e){
+           
+
+        }
+
+    </script>
+</body>
+</html>
